@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleturniej</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        main {
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+        .question-box {
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .answers button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .answers button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        #adminPanel {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f2f2f2;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .admin-button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            border: none;
+            background-color: #ff5722;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .admin-button:hover {
+            background-color: #e64a19;
+        }
+        #loginForm {
+            display: block;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #loginForm input {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Teleturniej: Wybierz poprawną odpowiedź!</h1>
+    </header>
+    <main>
+        <!-- Login Panel for Admin -->
+        <div id="loginForm">
+            <h2>Logowanie Administratora</h2>
+            <input type="text" id="adminUsername" placeholder="Nazwa użytkownika" />
+            <input type="password" id="adminPassword" placeholder="Hasło" />
+            <button onclick="login()">Zaloguj się</button>
+            <p id="loginError" style="color: red;"></p>
+        </div>
+
+        <!-- Main Game Area -->
+        <div id="gameArea">
+            <div class="question-box">
+                <h2 id="question">Pytanie pojawi się tutaj</h2>
+                <div class="answers">
+                    <button onclick="checkAnswer(0)" id="answer1">Odpowiedź 1</button>
+                    <button onclick="checkAnswer(1)" id="answer2">Odpowiedź 2</button>
+                    <button onclick="checkAnswer(2)" id="answer3">Odpowiedź 3</button>
+                    <button onclick="checkAnswer(3)" id="answer4">Odpowiedź 4</button>
+                </div>
+                <div class="result" id="result"></div>
+            </div>
+            <button onclick="nextQuestion()">Następne pytanie</button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel">
+            <h2>Panel Administratora</h2>
+            <h3>Odpowiedzi użytkowników:</h3>
+            <div id="userAnswers"></div>
+            <button class="admin-button" onclick="logout()">Wyloguj się</button>
+        </div>
+    </main>
+    
+    <script>
+        const questions = [
+            { question: "Który pierwiastek chemiczny ma symbol 'O'?", answers: ["Węgiel", "Tlen", "Azot", "Hel"], correct: 1 },
+            { question: "W którym roku odbyły się pierwsze nowożytne igrzyska olimpijskie?", answers: ["1900", "1888", "1896", "1924"], correct: 2 },
+            { question: "Które zwierzę jest największe na świecie?", answers: ["Słoń", "Rekin wielorybi", "Płetwal błękitny", "Kałamarnica olbrzymia"], correct: 2 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        // Panel game visibility
+        const gameArea = document.getElementById("gameArea");
+        const adminPanel = document.getElementById("adminPanel");
+        const loginForm = document.getElementById("loginForm");
+
+        // Admin login credentials (for demo purposes)
+        const adminUsername = "admin";
+        const adminPassword = "admin123";
+
+        // Load question
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById("question").innerText = question.question;
+            document.getElementById("answer1").innerText = question.answers[0];
+            document.getElementById("answer2").innerText = question.answers[1];
+            document.getElementById("answer3").innerText = question.answers[2];
+            document.getElementById("answer4").innerText = question.answers[3];
+            document.getElementById("result").innerText = "";
+        }
+
+        // Check the answer
+        function checkAnswer(answerIndex) {
+            const question = questions[currentQuestionIndex];
+            const correct = answerIndex === question.correct;
+            userAnswers.push({ question: question.question, answer: question.answers[answerIndex], correct: correct });
+            
+            if (correct) {
+                document.getElementById("result").innerText = "Brawo! Poprawna odpowiedź!";
+                document.getElementById("result").style.color = "green";
+            } else {
+                document.getElementById("result").innerText = "Źle! Spróbuj ponownie.";
+                document.getElementById("result").style.color = "red";
+            }
+        }
+
+        // Next question
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= questions.length) {
+                currentQuestionIndex = 0;
+            }
+            loadQuestion();
+        }
+
+        // Admin login
+        function login() {
+            const username = document.getElementById("adminUsername").value;
+            const password = document.getElementById("adminPassword").value;
+            if (username === adminUsername && password === adminPassword) {
+                loginForm.style.display = "none";
+                gameArea.style.display = "none";
+                adminPanel.style.display = "block";
+                displayUserAnswers();
+            } else {
+                document.getElementById("loginError").innerText = "Błędna nazwa użytkownika lub hasło.";
+            }
+        }
+
+        // Display user answers in the admin panel
+        function displayUserAnswers() {
+            const userAnswersContainer = document.getElementById("userAnswers");
+            userAnswersContainer.innerHTML = "";
+            userAnswers.forEach((answer, index) => {
+                const answerDiv = document.createElement("div");
+                answerDiv.innerHTML = `<strong>Pytanie:</strong> ${answer.question} <br> <strong>Odpowiedź:</strong> ${answer.answer} <br> <strong>Status:</strong> ${answer.correct ? "Poprawna" : "Niepoprawna"} <br><br>`;
+                userAnswersContainer.appendChild(answerDiv);
+            });
+        }
+
+        // Logout admin
+        function logout() {
+            adminPanel.style.display = "none";
+            loginForm.style.display = "block";
+            userAnswers = [];
+        }
+
+        // Load the first question
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
